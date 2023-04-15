@@ -310,6 +310,57 @@ https://tomcat.apache.org/download-connectors.cgi
     worker.worker2.connection_pool_timeout=600
     worker.worker2.socket_keepalive=1
 
+<br>
 
+`anup@ubuntu-22041-100-REALMREGAL:~$ grep -r JkWorkersFile /etc/apache2`
 
+`anup@ubuntu-22041-100-REALMREGAL:~$ sudo nano /etc/apache2/mods-available/mod_jk.conf`
 
+    ServerName 192.168.56.100
+    
+    LoadModule jk_module "/usr/lib/apache2/modules/mod_jk.so"
+    
+    JkWorkersFile /etc/apache2/workers.properties
+    JkLogFile /var/log/apache2/mod_jk.log
+    
+    #JkMount /myapp/* lb_router
+    #JkMount /* lb_router
+    JkMount /docs/*  lb_router
+    JkMount /docs*  lb_router
+    JkMount /docs/*  jk-status
+    JkMount /docs*  jk-status
+    JkMount /docs/*  jk-manager
+    JkMount /docs*  jk-manager
+    
+    
+    JkLogLevel debug
+    
+    JkLogStampFormat "[%a %b %d %H:%M:%S %Y]"
+    JkOptions +ForwardKeySize +ForwardURICompat -ForwardDirectories
+    JkRequestLogFormat "%w %V %T"
+
+`anup@ubuntu-22041-100-REALMREGAL:~$ sudo nano /etc/apache2/mods-available/jk.conf`
+
+    <IfModule jk_module>
+        JkWorkersFile /etc/apache2/workers.properties
+    </IfModule>
+
+`anup@ubuntu-22041-100-REALMREGAL:~$ sudo nano /etc/apache2/sites-enabled/000-default.conf`
+
+    <VirtualHost *:80>
+            ServerName 192.168.56.100
+            JkMount /docs/*  lb_router
+            JkMount /docs*  lb_router
+            JkMount /docs/*  jk-status
+            JkMount /docs*  jk-status
+            JkMount /docs/*  jk-manager
+            JkMount /docs*  jk-manager
+    </VirtualHost>
+
+`anup@ubuntu-22041-100-REALMREGAL:~$ apachectl configtest`
+
+`anup@ubuntu-22041-100-REALMREGAL:~$ sudo systemctl restart apache2.service`
+
+### On your favorite browser : http://192.168.56.100/docs/
+
+<br>
